@@ -37,7 +37,10 @@ impl AppState {
         }
 
         let mut res;
-        let upd = Arc::new(Mutex::new(VersionUpdater::with_default_version()));
+        // Start with an empty updater cache so startup performs a real version
+        // fetch immediately. This prevents serving stale default legacy
+        // api/swversion values until the first 24h refresh window expires.
+        let upd = Arc::new(Mutex::new(VersionUpdater::new()));
         let swversion = upd.lock().await.get().await.clone();
 
         if let Ok(fd) = File::open(&config.bifrost.state_file) {
