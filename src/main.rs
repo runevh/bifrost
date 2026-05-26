@@ -118,13 +118,9 @@ async fn build_tasks(appstate: &AppState) -> ApiResult<()> {
     // register all backend templates
     let template = backend::z2m::Z2mServiceTemplate::new(appstate.clone());
     mgr.register_template("z2m", template).await?;
-    let template = backend::default::DefaultServiceTemplate::new(appstate.clone());
-    mgr.register_template("default", template).await?;
-
     // choose backend based on config:
     // 1) Home Assistant if configured
     // 2) otherwise z2m if any z2m instances are configured
-    // 3) otherwise default no-op fallback backend
     let has_homeassistant = appstate.config().homeassistant.is_some();
     let has_z2m = !appstate.config().z2m.servers.is_empty();
 
@@ -144,8 +140,9 @@ async fn build_tasks(appstate: &AppState) -> ApiResult<()> {
             mgr.start(ServiceId::instance("z2m", name)).await?;
         }
     } else {
-        log::info!("No homeassistant or z2m backend configured; using default fallback backend.");
-        mgr.start(ServiceId::instance("default", "main")).await?;
+        return Err(bifrost::error::ApiError::service_error(
+            "No backend configured: set either `homeassistant` or `z2m` in config.yaml",
+        ));
     }
 
     // finally, iterate over all services and start them
