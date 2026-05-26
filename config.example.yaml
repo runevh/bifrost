@@ -13,3 +13,10 @@ bridge:
 z2m:
   server1:
     url: ws://10.0.0.100:8080
+
+homeassistant:
+  url: http://homeassistant.local:8123
+  token: YOUR_LONG_LIVED_ACCESS_TOKEN
+  # Optional fade duration for light updates sent to Home Assistant
+  # (applies to on/off, brightness, color and color-temperature writes).
+  transition_ms: 350

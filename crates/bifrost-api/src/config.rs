@@ -32,7 +32,7 @@ pub struct BifrostConfig {
     pub cert_file: Utf8PathBuf,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Z2mConfig {
     #[serde(flatten)]
     pub servers: BTreeMap<String, Z2mServer>,
@@ -46,6 +46,14 @@ pub struct Z2mServer {
     pub streaming_fps: Option<NonZeroU32>,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq)]
+pub struct HomeAssistantConfig {
+    pub url: Url,
+    pub token: String,
+    pub disable_tls_verify: Option<bool>,
+    pub transition_ms: Option<u32>,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, Default, Eq, PartialEq)]
 pub struct RoomConfig {
     pub name: Option<String>,
@@ -55,7 +63,9 @@ pub struct RoomConfig {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AppConfig {
     pub bridge: BridgeConfig,
+    #[serde(default)]
     pub z2m: Z2mConfig,
+    pub homeassistant: Option<HomeAssistantConfig>,
     pub bifrost: BifrostConfig,
     #[serde(default)]
     pub rooms: BTreeMap<String, RoomConfig>,
@@ -116,5 +126,27 @@ impl Z2mServer {
 impl Client {
     pub async fn config(&self) -> BifrostResult<AppConfig> {
         self.get("config").await
+    }
+}
+
+impl HomeAssistantConfig {
+    #[must_use]
+    pub fn get_websocket_url(&self) -> Url {
+        let mut url = self.url.clone();
+        let scheme = match url.scheme() {
+            "https" => "wss",
+            "http" => "ws",
+            other => other,
+        }
+        .to_string();
+        let _ = url.set_scheme(&scheme);
+        url.set_path("/api/websocket");
+        url.set_query(None);
+        url
+    }
+
+    #[must_use]
+    pub fn get_sanitized_websocket_url(&self) -> String {
+        self.get_websocket_url().to_string()
     }
 }
