@@ -12,6 +12,28 @@ pub(super) struct PendingLightUpdate {
 }
 
 impl HomeAssistantBackend {
+    async fn grouped_light_members(
+        &self,
+        grouped_link: &hue::api::ResourceLink,
+    ) -> ApiResult<Vec<hue::api::ResourceLink>> {
+        let res = self.state.lock().await;
+        let grouped = res.get::<GroupedLight>(grouped_link)?;
+        let room = res.get::<Room>(&grouped.owner)?;
+
+        let mut members = Vec::new();
+        for dev_link in &room.children {
+            let Ok(device) = res.get::<Device>(dev_link) else {
+                continue;
+            };
+            for svc in &device.services {
+                if svc.rtype == RType::Light {
+                    members.push(*svc);
+                }
+            }
+        }
+        Ok(members)
+    }
+
     pub(super) async fn enqueue_light_update(
         &mut self,
         link: &hue::api::ResourceLink,
@@ -230,6 +252,28 @@ impl HomeAssistantBackend {
             bifrost_api::backend::BackendRequest::LightUpdate(link, upd) => {
                 let _ = ws; // Keep signature uniform for future event handlers.
                 self.enqueue_light_update(link, upd).await
+            }
+            bifrost_api::backend::BackendRequest::GroupedLightUpdate(link, upd) => {
+                let _ = ws; // Keep signature uniform for future event handlers.
+                let members = self.grouped_light_members(link).await?;
+                if members.is_empty() {
+                    log::warn!("Grouped light {:?} has no member lights", link.rid);
+                    return Ok(());
+                }
+
+                let light_upd = hue::api::LightUpdate {
+                    on: upd.on,
+                    dimming: upd.dimming,
+                    color: upd.color,
+                    color_temperature: upd.color_temperature,
+                    dynamics: None,
+                    ..hue::api::LightUpdate::default()
+                };
+
+                for member in members {
+                    self.enqueue_light_update(&member, &light_upd).await?;
+                }
+                Ok(())
             }
             _ => Ok(()),
         }
