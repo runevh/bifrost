@@ -4,6 +4,7 @@ use axum::routing::post;
 
 use bifrost_api::config::Z2mServer;
 
+use crate::backend::default::DefaultBackend;
 use crate::backend::z2m::Z2mBackend;
 use crate::routes::bifrost::BifrostApiResult;
 use crate::routes::extractor::Json;
@@ -28,6 +29,26 @@ async fn post_backend_z2m(
     Ok(Json(()))
 }
 
+#[axum::debug_handler]
+async fn post_backend_default(
+    State(state): State<AppState>,
+    Path(name): Path<String>,
+) -> BifrostApiResult<Json<()>> {
+    log::info!("Adding new default backend: {name:?}");
+
+    let mut mgr = state.manager();
+
+    let svc = DefaultBackend::new(name.clone(), state.clone());
+    let name = format!("default-{name}");
+
+    mgr.register_service(&name, svc).await?;
+    mgr.start(&name).await?;
+
+    Ok(Json(()))
+}
+
 pub fn router() -> Router<AppState> {
-    Router::new().route("/z2m/{name}", post(post_backend_z2m))
+    Router::new()
+        .route("/z2m/{name}", post(post_backend_z2m))
+        .route("/default/{name}", post(post_backend_default))
 }
