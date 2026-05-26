@@ -115,13 +115,37 @@ async fn build_tasks(appstate: &AppState) -> ApiResult<()> {
     )?;
     mgr.register_service("entertainment", svc).await?;
 
-    // register all z2m backends as services
+    // register all backend templates
     let template = backend::z2m::Z2mServiceTemplate::new(appstate.clone());
     mgr.register_template("z2m", template).await?;
+    let template = backend::default::DefaultServiceTemplate::new(appstate.clone());
+    mgr.register_template("default", template).await?;
 
-    // start named z2m instances, since templated services appear when started
-    for name in appstate.config().z2m.servers.keys() {
-        mgr.start(ServiceId::instance("z2m", name)).await?;
+    // choose backend based on config:
+    // 1) Home Assistant if configured
+    // 2) otherwise z2m if any z2m instances are configured
+    // 3) otherwise default no-op fallback backend
+    let has_homeassistant = appstate.config().homeassistant.is_some();
+    let has_z2m = !appstate.config().z2m.servers.is_empty();
+
+    if has_homeassistant {
+        if has_z2m {
+            log::warn!("Both homeassistant and z2m backends are configured; using homeassistant.");
+        } else {
+            log::info!("Using homeassistant backend from config.");
+        }
+        let ha_config = appstate.config().homeassistant.clone().expect("checked");
+        let svc = backend::ha::HomeAssistantBackend::new(ha_config, appstate.res.clone());
+        mgr.register_service("homeassistant", svc).await?;
+    } else if has_z2m {
+        log::info!("Using z2m backend(s) from config.");
+        // start named z2m instances, since templated services appear when started
+        for name in appstate.config().z2m.servers.keys() {
+            mgr.start(ServiceId::instance("z2m", name)).await?;
+        }
+    } else {
+        log::info!("No homeassistant or z2m backend configured; using default fallback backend.");
+        mgr.start(ServiceId::instance("default", "main")).await?;
     }
 
     // finally, iterate over all services and start them
