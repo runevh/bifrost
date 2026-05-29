@@ -30,6 +30,16 @@ When the network fields are empty, startup reads Supervisor's `/network/info` an
 
 If the wrong interface is selected, set those values manually in the add-on options.
 
+## Installation Speed
+
+This add-on is configured to pull prebuilt images from GitHub Container Registry:
+
+```yaml
+image: ghcr.io/runevh/{arch}-addon-bifrost
+```
+
+If no matching image tag exists for the add-on version, Home Assistant falls back to building locally, which can take a long time on small devices.
+
 ## Network Requirements
 
 Bifrost emulates a Philips Hue bridge, so it needs:

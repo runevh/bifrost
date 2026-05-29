@@ -55,7 +55,23 @@ If you add this repo to Home Assistant as a local add-on repository from a worki
 
 ## Build Source
 
-The add-on Dockerfile builds Bifrost from git because Home Assistant builds add-ons with the add-on folder as the Docker build context.
+The add-on is configured to pull prebuilt images from GitHub Container Registry:
+
+```yaml
+image: ghcr.io/runevh/{arch}-addon-bifrost
+```
+
+The GitHub Actions workflow in `.github/workflows/addon-publish.yml` publishes:
+
+- `ghcr.io/runevh/amd64-addon-bifrost:0.1.0`
+- `ghcr.io/runevh/aarch64-addon-bifrost:0.1.0`
+- matching `latest` tags
+
+Home Assistant uses the add-on `version` as the image tag.
+
+## Local Build Source
+
+If the prebuilt image is unavailable or the `image` key is removed, Home Assistant can still build locally. The add-on Dockerfile builds Bifrost from git because Home Assistant builds add-ons with the add-on folder as the Docker build context.
 
 The source repository and branch are configured in `addon/bifrost/build.yaml`:
 

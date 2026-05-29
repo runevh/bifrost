@@ -3,6 +3,7 @@ version: "0.1.0"
 slug: bifrost
 description: Philips Hue bridge emulator backed by Home Assistant
 url: https://github.com/runevh/bifrost
+image: ghcr.io/runevh/{arch}-addon-bifrost
 arch:
   - aarch64
   - amd64
