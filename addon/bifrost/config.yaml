@@ -1,0 +1,46 @@
+name: Bifrost Bridge
+version: "0.1.0"
+slug: bifrost
+description: Philips Hue bridge emulator backed by Home Assistant
+url: https://github.com/runevh/bifrost
+arch:
+  - aarch64
+  - amd64
+startup: application
+boot: auto
+init: false
+host_network: true
+homeassistant_api: true
+hassio_api: true
+hassio_role: default
+map:
+  - type: addon_config
+    read_only: false
+ports:
+  80/tcp: 80
+  443/tcp: 443
+  2100/udp: 2100
+ports_description:
+  80/tcp: Hue HTTP API
+  443/tcp: Hue HTTPS API
+  2100/udp: Hue entertainment streaming
+options:
+  bridge_name: Bifrost
+  bridge_mac: ""
+  bridge_ipaddress: ""
+  bridge_netmask: ""
+  bridge_gateway: ""
+  bridge_timezone: ""
+  disable_tls_verify: false
+  transition_ms: 350
+  light_update_buffer_ms: 80
+schema:
+  bridge_name: str
+  bridge_mac: str
+  bridge_ipaddress: str
+  bridge_netmask: str
+  bridge_gateway: str
+  bridge_timezone: str
+  disable_tls_verify: bool
+  transition_ms: int(0,)
+  light_update_buffer_ms: int(0,)

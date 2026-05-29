@@ -1,0 +1,25 @@
+configuration:
+  bridge_name:
+    name: Bridge name
+    description: Name exposed to Hue clients.
+  bridge_mac:
+    name: Bridge MAC address
+    description: Leave empty to auto-detect the default host network interface MAC address.
+  bridge_ipaddress:
+    name: Bridge IP address
+    description: Leave empty to auto-detect the default host IPv4 address.
+  bridge_netmask:
+    name: Bridge netmask
+  bridge_gateway:
+    name: Bridge gateway
+    description: Leave empty to auto-detect the default gateway.
+  bridge_timezone:
+    name: Bridge timezone
+  disable_tls_verify:
+    name: Disable TLS verification
+  transition_ms:
+    name: Transition duration
+    description: Fade duration in milliseconds for Home Assistant light updates.
+  light_update_buffer_ms:
+    name: Light update buffer
+    description: Buffer window in milliseconds for coalescing bursty light updates.
