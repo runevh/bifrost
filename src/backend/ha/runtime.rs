@@ -12,6 +12,24 @@ pub(super) struct PendingLightUpdate {
 }
 
 impl HomeAssistantBackend {
+    fn current_batch_deadline(&mut self) -> Instant {
+        let now = Instant::now();
+        if let Some(deadline) = self.pending_light_batch_deadline
+            && now < deadline
+        {
+            return deadline;
+        }
+
+        let window_ms = self
+            .config
+            .light_update_buffer_ms
+            .unwrap_or(Self::UPDATE_DEBOUNCE_MS)
+            .clamp(1, 2000);
+        let deadline = now + Duration::from_millis(window_ms);
+        self.pending_light_batch_deadline = Some(deadline);
+        deadline
+    }
+
     async fn grouped_light_members(
         &self,
         grouped_link: &hue::api::ResourceLink,
@@ -65,6 +83,7 @@ impl HomeAssistantBackend {
                         .iter()
                         .all(|eid| Self::parse_segment_index(eid).is_some());
                 if has_real_segments && !grad.points.is_empty() {
+                    let batch_deadline = self.current_batch_deadline();
                     let max_idx = grad.points.len().saturating_sub(1);
                     for (idx, seg_entity_id) in segment_entities.iter().enumerate() {
                         let point = &grad.points[idx.min(max_idx)];
@@ -72,8 +91,7 @@ impl HomeAssistantBackend {
                             .pending_light_updates
                             .entry(seg_entity_id.clone())
                             .or_default();
-                        pending.deadline =
-                            Some(Instant::now() + Duration::from_millis(Self::UPDATE_DEBOUNCE_MS));
+                        pending.deadline = Some(batch_deadline);
                         if let Some(on) = upd.on {
                             pending.on = Some(on.on);
                         }
@@ -116,9 +134,9 @@ impl HomeAssistantBackend {
                     });
                 }
 
+                let batch_deadline = self.current_batch_deadline();
                 let pending = self.pending_light_updates.entry(entity_id).or_default();
-                pending.deadline =
-                    Some(Instant::now() + Duration::from_millis(Self::UPDATE_DEBOUNCE_MS));
+                pending.deadline = Some(batch_deadline);
                 pending.gradient_points = Some(
                     grad.points
                         .iter()
@@ -136,8 +154,9 @@ impl HomeAssistantBackend {
             }
         }
 
+        let batch_deadline = self.current_batch_deadline();
         let pending = self.pending_light_updates.entry(entity_id).or_default();
-        pending.deadline = Some(Instant::now() + Duration::from_millis(Self::UPDATE_DEBOUNCE_MS));
+        pending.deadline = Some(batch_deadline);
         pending.gradient_points = None;
         pending.gradient_mode = None;
 
@@ -298,6 +317,12 @@ impl HomeAssistantBackend {
             if let Some(cmd) = self.pending_light_updates.remove(&entity_id) {
                 self.send_light_command(ws, entity_id, cmd).await?;
             }
+        }
+        if self
+            .pending_light_batch_deadline
+            .is_some_and(|deadline| deadline <= now)
+        {
+            self.pending_light_batch_deadline = None;
         }
         Ok(())
     }

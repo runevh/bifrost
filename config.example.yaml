@@ -20,3 +20,6 @@ homeassistant:
   # Optional fade duration for light updates sent to Home Assistant
   # (applies to on/off, brightness, color and color-temperature writes).
   transition_ms: 350
+  # Optional buffer window for coalescing bursty light updates (e.g. scenes)
+  # into one backend flush batch.
+  light_update_buffer_ms: 80

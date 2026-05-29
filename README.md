@@ -40,6 +40,7 @@ homeassistant:
   token: YOUR_LONG_LIVED_ACCESS_TOKEN
   disable_tls_verify: false
   transition_ms: 350
+  light_update_buffer_ms: 80
 ```
 
 Notes:
@@ -47,6 +48,7 @@ Notes:
 - `bridge.mac` should match the interface you use to expose the bridge.
 - `homeassistant.url` can be `http://...` or `https://...`.
 - `token` must be a Home Assistant long-lived access token.
+- `light_update_buffer_ms` controls how long to buffer bursty light updates before flushing them together.
 
 `z2m` can still be configured, but if both `homeassistant` and `z2m` are present, this fork prefers `homeassistant`.
 

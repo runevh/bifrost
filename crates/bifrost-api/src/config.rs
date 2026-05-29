@@ -53,6 +53,7 @@ pub struct HomeAssistantConfig {
     pub token: String,
     pub disable_tls_verify: Option<bool>,
     pub transition_ms: Option<u32>,
+    pub light_update_buffer_ms: Option<u64>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default, Eq, PartialEq)]
