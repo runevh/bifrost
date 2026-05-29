@@ -49,6 +49,7 @@ pub struct Z2mServer {
 #[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub struct HomeAssistantConfig {
     pub url: Url,
+    pub websocket_url: Option<Url>,
     pub token: String,
     pub disable_tls_verify: Option<bool>,
     pub transition_ms: Option<u32>,
@@ -132,6 +133,10 @@ impl Client {
 impl HomeAssistantConfig {
     #[must_use]
     pub fn get_websocket_url(&self) -> Url {
+        if let Some(url) = &self.websocket_url {
+            return url.clone();
+        }
+
         let mut url = self.url.clone();
         let scheme = match url.scheme() {
             "https" => "wss",
