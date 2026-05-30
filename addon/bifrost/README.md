@@ -10,7 +10,7 @@ No option is normally required. Leave the network fields empty to auto-detect th
 
 ## Notes
 
-- The generated Bifrost runtime config is written to `/data/config.yaml`.
+- The generated Bifrost runtime config is written to `/app/config.yaml`.
 - Bifrost state and the generated Hue-style certificate are persisted in `/data`.
 - The add-on uses Home Assistant's Supervisor proxy and does not need a long-lived access token.
 - If auto-detection picks the wrong interface, set `bridge_ipaddress`, `bridge_mac`, `bridge_netmask`, and `bridge_gateway` manually.

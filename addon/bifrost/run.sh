@@ -3,7 +3,7 @@ set -euo pipefail
 
 CONFIG_DIR=/data
 OPTIONS_FILE="${CONFIG_DIR}/options.json"
-CONFIG_FILE="${CONFIG_DIR}/config.yaml"
+CONFIG_FILE=/app/config.yaml
 STATE_FILE="${CONFIG_DIR}/state.yaml"
 CERT_FILE="${CONFIG_DIR}/cert.pem"
 

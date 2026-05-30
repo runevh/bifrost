@@ -7,7 +7,7 @@ This repo includes a Home Assistant add-on wrapper in `addon/bifrost`.
 The add-on does not change Bifrost's internal configuration model. Instead, it:
 
 1. Reads Home Assistant add-on options from `/data/options.json`.
-2. Writes Bifrost's normal runtime config to `/data/config.yaml`.
+2. Writes Bifrost's normal runtime config to `/app/config.yaml`.
 3. Stores Bifrost state and the generated Hue-style certificate in `/data`.
 4. Starts `/app/bifrost`.
 
