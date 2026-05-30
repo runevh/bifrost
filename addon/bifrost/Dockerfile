@@ -14,9 +14,11 @@ RUN apt-get update \
 RUN git clone --depth 1 --branch "${BIFROST_REF}" "${BIFROST_REPOSITORY}" .
 RUN cargo build --locked --release
 
-FROM ${BUILD_FROM}
+FROM debian:bookworm-slim
 
-RUN apk add --no-cache bash libgcc libssl3 ca-certificates curl iproute2 jq tzdata
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends bash ca-certificates curl iproute2 jq libssl3 tzdata \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /src/target/release/bifrost /app/bifrost
 COPY run.sh /run.sh
