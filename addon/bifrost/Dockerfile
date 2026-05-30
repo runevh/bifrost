@@ -1,14 +1,16 @@
 ARG BUILD_FROM
 ARG RUST_VERSION=1.85
 
-FROM rust:${RUST_VERSION}-alpine AS build
+FROM rust:${RUST_VERSION}-slim-bookworm AS build
 
 ARG BIFROST_REPOSITORY
 ARG BIFROST_REF
 
 WORKDIR /src
 
-RUN apk add --no-cache git musl-dev pkgconf openssl-dev
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git pkg-config libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
 RUN git clone --depth 1 --branch "${BIFROST_REF}" "${BIFROST_REPOSITORY}" .
 RUN cargo build --locked --release
 
