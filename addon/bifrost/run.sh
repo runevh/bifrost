@@ -1,13 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-source /usr/lib/bashio/bashio.sh
-
 CONFIG_DIR=/data
 OPTIONS_FILE="${CONFIG_DIR}/options.json"
 CONFIG_FILE="${CONFIG_DIR}/config.yaml"
 STATE_FILE="${CONFIG_DIR}/state.yaml"
 CERT_FILE="${CONFIG_DIR}/cert.pem"
+
+log_info() {
+  printf '[%(%H:%M:%S)T] INFO: %s\n' -1 "$*"
+}
+
+log_fatal() {
+  printf '[%(%H:%M:%S)T] FATAL: %s\n' -1 "$*" >&2
+}
 
 yaml_quote() {
   local value="${1:-}"
@@ -89,7 +95,7 @@ require_value() {
   local value="$2"
 
   if [[ -z "${value}" ]]; then
-    bashio::log.fatal "Missing required value: ${name}"
+    log_fatal "Missing required value: ${name}"
     exit 1
   fi
 }
@@ -187,5 +193,5 @@ homeassistant:
   light_update_buffer_ms: ${light_update_buffer_ms}
 EOF
 
-bashio::log.info "Starting Bifrost on ${bridge_ipaddress} using the Home Assistant Supervisor proxy"
+log_info "Starting Bifrost on ${bridge_ipaddress} using the Home Assistant Supervisor proxy"
 exec /app/bifrost
