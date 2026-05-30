@@ -68,9 +68,20 @@ supervisor_get() {
   local path="$1"
 
   curl -fsS \
-    -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
+    -H "Authorization: Bearer ${supervisor_token}" \
     -H "Content-Type: application/json" \
     "http://supervisor${path}" 2>/dev/null || true
+}
+
+read_env_value() {
+  local name="$1"
+  local file="/run/s6/container_environment/${name}"
+
+  if [[ -n "${!name:-}" ]]; then
+    printf '%s' "${!name}"
+  elif [[ -r "${file}" ]]; then
+    cat "${file}"
+  fi
 }
 
 require_value() {
@@ -101,7 +112,11 @@ disable_tls_verify="$(option disable_tls_verify false)"
 transition_ms="$(option transition_ms 350)"
 light_update_buffer_ms="$(option light_update_buffer_ms 80)"
 
-require_value SUPERVISOR_TOKEN "${SUPERVISOR_TOKEN:-}"
+supervisor_token="$(read_env_value SUPERVISOR_TOKEN)"
+if [[ -z "${supervisor_token}" ]]; then
+  supervisor_token="$(read_env_value HASSIO_TOKEN)"
+fi
+require_value SUPERVISOR_TOKEN "${supervisor_token}"
 
 network_info="$(supervisor_get '/network/info')"
 host_info="$(supervisor_get '/host/info')"
@@ -166,7 +181,7 @@ bridge:
 homeassistant:
   url: http://supervisor/core/api/
   websocket_url: ws://supervisor/core/websocket
-  token: $(yaml_quote "${SUPERVISOR_TOKEN}")
+  token: $(yaml_quote "${supervisor_token}")
   disable_tls_verify: ${disable_tls_verify}
   transition_ms: ${transition_ms}
   light_update_buffer_ms: ${light_update_buffer_ms}
