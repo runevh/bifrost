@@ -69,6 +69,8 @@ The GitHub Actions workflow in `.github/workflows/addon-publish.yml` publishes:
 
 Home Assistant uses the add-on `version` as the image tag.
 
+When changing add-on metadata such as API permissions, bump `addon/bifrost/config.yaml`'s `version` so Supervisor recreates the container with the updated settings.
+
 ## Local Build Source
 
 If the prebuilt image is unavailable or the `image` key is removed, Home Assistant can still build locally. The add-on Dockerfile builds Bifrost from git because Home Assistant builds add-ons with the add-on folder as the Docker build context.

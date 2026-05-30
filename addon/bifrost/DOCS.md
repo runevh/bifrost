@@ -40,6 +40,8 @@ image: ghcr.io/runevh/{arch}-addon-bifrost
 
 If no matching image tag exists for the add-on version, Home Assistant falls back to building locally, which can take a long time on small devices.
 
+After changing add-on permissions or startup behavior, the add-on version must be bumped so Home Assistant recreates the container using the updated metadata.
+
 ## Network Requirements
 
 Bifrost emulates a Philips Hue bridge, so it needs:

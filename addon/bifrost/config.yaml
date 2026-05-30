@@ -1,5 +1,5 @@
 name: Bifrost Bridge
-version: "0.1.0"
+version: "0.1.1"
 slug: bifrost
 description: Philips Hue bridge emulator backed by Home Assistant
 url: https://github.com/runevh/bifrost

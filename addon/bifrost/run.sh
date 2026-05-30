@@ -4,6 +4,7 @@ set -euo pipefail
 source /usr/lib/bashio/bashio.sh
 
 CONFIG_DIR=/data
+OPTIONS_FILE="${CONFIG_DIR}/options.json"
 CONFIG_FILE="${CONFIG_DIR}/config.yaml"
 STATE_FILE="${CONFIG_DIR}/state.yaml"
 CERT_FILE="${CONFIG_DIR}/cert.pem"
@@ -82,15 +83,23 @@ require_value() {
   fi
 }
 
-bridge_name="$(bashio::config 'bridge_name')"
-bridge_mac="$(bashio::config 'bridge_mac')"
-bridge_ipaddress="$(bashio::config 'bridge_ipaddress')"
-bridge_netmask="$(bashio::config 'bridge_netmask')"
-bridge_gateway="$(bashio::config 'bridge_gateway')"
-bridge_timezone="$(bashio::config 'bridge_timezone')"
-disable_tls_verify="$(bashio::config 'disable_tls_verify')"
-transition_ms="$(bashio::config 'transition_ms')"
-light_update_buffer_ms="$(bashio::config 'light_update_buffer_ms')"
+option() {
+  local key="$1"
+  local default_value="${2:-}"
+
+  jq -r --arg key "${key}" --arg default_value "${default_value}" \
+    '.[$key] // $default_value' "${OPTIONS_FILE}"
+}
+
+bridge_name="$(option bridge_name Bifrost)"
+bridge_mac="$(option bridge_mac)"
+bridge_ipaddress="$(option bridge_ipaddress)"
+bridge_netmask="$(option bridge_netmask)"
+bridge_gateway="$(option bridge_gateway)"
+bridge_timezone="$(option bridge_timezone)"
+disable_tls_verify="$(option disable_tls_verify false)"
+transition_ms="$(option transition_ms 350)"
+light_update_buffer_ms="$(option light_update_buffer_ms 80)"
 
 require_value SUPERVISOR_TOKEN "${SUPERVISOR_TOKEN:-}"
 
