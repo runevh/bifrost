@@ -199,12 +199,14 @@ impl HomeAssistantBackend {
             let entity_entry = entity_registry
                 .iter()
                 .find(|e| e.entity_id == state.entity_id);
-            if let Some(entry) = entity_entry
-                && let Some(device_id) = &entry.device_id
-                && let Some(primary_entity_id) = wled_primary.get(device_id)
-                && primary_entity_id != &state.entity_id
-            {
-                continue;
+            if let Some(entry) = entity_entry {
+                if let Some(device_id) = &entry.device_id {
+                    if let Some(primary_entity_id) = wled_primary.get(device_id) {
+                        if primary_entity_id != &state.entity_id {
+                            continue;
+                        }
+                    }
+                }
             }
             let profile = Self::classify_light_profile(state, entity_entry);
 

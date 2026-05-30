@@ -14,10 +14,10 @@ pub(super) struct PendingLightUpdate {
 impl HomeAssistantBackend {
     fn current_batch_deadline(&mut self) -> Instant {
         let now = Instant::now();
-        if let Some(deadline) = self.pending_light_batch_deadline
-            && now < deadline
-        {
-            return deadline;
+        if let Some(deadline) = self.pending_light_batch_deadline {
+            if now < deadline {
+                return deadline;
+            }
         }
 
         let window_ms = self
@@ -119,10 +119,10 @@ impl HomeAssistantBackend {
                         if let Some(on) = on_value {
                             light.on = On { on };
                         }
-                        if let Some(bri) = bri_value
-                            && let Some(dim) = &mut light.dimming
-                        {
-                            dim.brightness = bri;
+                        if let Some(bri) = bri_value {
+                            if let Some(dim) = &mut light.dimming {
+                                dim.brightness = bri;
+                            }
                         }
                         if let Some(col) = &mut light.color {
                             col.xy = first_xy;
@@ -442,9 +442,11 @@ impl HomeAssistantBackend {
             // For WLED direct gradient lights, keep Hue gradient/colors as last requested
             // from Hue app instead of forcing a flattened single-color HA readback.
             let is_wled_direct = self.wled_direct_targets.contains_key(&new_state.entity_id);
-            if !is_wled_direct && let Some(col) = &mut light.color {
-                if let Some(xy) = new_state.attributes.current_xy() {
-                    col.xy = xy;
+            if !is_wled_direct {
+                if let Some(col) = &mut light.color {
+                    if let Some(xy) = new_state.attributes.current_xy() {
+                        col.xy = xy;
+                    }
                 }
             }
 

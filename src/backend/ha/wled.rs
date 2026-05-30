@@ -94,10 +94,10 @@ impl HomeAssistantBackend {
                     ip_by_suffix.insert(suffix.to_string(), ip.to_string());
                 }
             }
-            if let Some(suffix) = st.entity_id.strip_prefix("sensor.wled_led_count")
-                && let Ok(v) = st.state.parse::<u32>()
-            {
-                leds_by_suffix.insert(suffix.to_string(), v);
+            if let Some(suffix) = st.entity_id.strip_prefix("sensor.wled_led_count") {
+                if let Ok(v) = st.state.parse::<u32>() {
+                    leds_by_suffix.insert(suffix.to_string(), v);
+                }
             }
         }
 
